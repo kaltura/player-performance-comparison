@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>kWidget Player test</title>
+</head>
+<body>
+<h2>Run Time Tests:  </h2>
+<br />
+<a id="embed17" href="#">Dynamic Embed HTML5 1.7</a> <br>
+<a id="embed16" href="#">Dynamic Embed HTML5 1.6x </a><br>
+<a id="embedFlash" href="#">Dynamic KDP Flash Embed</a><br>
+<br><br>
+<div id="runTimes" style="width:800px;background:#EEE;"> </div>
+<br>
+<div id="myVideoTarget" style="width:400px;height:330px;"></div>
+<script>
+	
+	document.getElementById('embed16').addEventListener('click', function(){
+		startClock();
+		appendScriptUrl('http://html5video.org/kgit/tags/v1.6.12.10/mwEmbedLoader.php', function(){
+			mw.setConfig( 'forceMobileHTML5', true);
+			appendToScore( "Load kWidget library");
+			doKWidgetEmbed();
+		});
+		return false;
+	});
+	
+	document.getElementById('embedFlash').addEventListener('click', function(){
+		startClock();
+		appendScriptUrl('http://html5video.org/kgit/tags/v1.6.12.10/mwEmbedLoader.php', function(){
+			mw.setConfig( 'forceMobileHTML5', false);
+			appendToScore( "Load kWidget library");
+			doKWidgetEmbed();
+		});
+		return false;
+	});
+	
+	
+	/* utilities */
+	
+	var startTime = null;
+	var firstTime = null;
+	var previusTime = null
+	function startClock(){
+		document.getElementById( 'runTimes' ).innerHTML = '';
+		startTime = new Date().getTime();
+		previusTime = startTime;
+		firstTime = startTime;
+	}
+	function getRunTime(){
+		var rt = new Date().getTime() - startTime;
+		previusTime = new Date().getTime();
+		return rt;
+	}
+	function getTimeSinceLast(){
+		return  new Date().getTime() - previusTime;
+	}
+	function kWidgetStartPlaybackTime(){
+		appendToScore( "Start Playback" );
+					
+	}
+	function doKWidgetEmbed(){
+		kWidget.embed({
+			'targetId': 'myVideoTarget',
+			'wid': '_243342',
+			'uiconf_id' : '2877502',
+			'entry_id' : '0_uka1msg4',
+			'flashvars':{
+				'autoPlay' : true
+			},
+			'readyCallback': function( playerId ){
+				appendToScore( "readyCallback ( ready for bind )" );
+				var kdp = document.getElementById( playerId );
+				kdp.addJsListener("doPlay", 'kWidgetStartPlaybackTime' )
+			}
+		});
+	}
+	function appendToScore( name ){
+		var rtElm = document.getElementById( 'runTimes' );
+		rtElm.innerHTML = rtElm.innerHTML +
+		"<b>" + getTimeSinceLast() + "</b> ms " + name +  ", total clock time: <b>" + getRunTime() + "</b> <br>";
+	}
+	function appendScriptUrl( url, callback ) {
+		var head = document.getElementsByTagName("head")[0] || document.documentElement;
+		var script = document.createElement("script");
+		script.src = url;
+
+		// Handle Script loading
+		var done = false;
+
+		// Attach handlers for all browsers
+		script.onload = script.onreadystatechange = function() {
+			if ( !done && (!this.readyState ||
+					this.readyState === "loaded" || this.readyState === "complete") ) {
+				done = true; 
+				if( typeof callback == 'function'){
+					callback();
+				}
+
+				// Handle memory leak in IE
+				script.onload = script.onreadystatechange = null;
+				if ( head && script.parentNode ) {
+					head.removeChild( script );
+				}
+			}
+		};
+
+		// Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+		// This arises when a base node is used (#2709 and #4378).
+		head.insertBefore( script, head.firstChild );
+	}
+</script>
+</body>
+</html>
