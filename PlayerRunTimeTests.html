@@ -15,6 +15,17 @@
 <div id="myVideoTarget" style="width:400px;height:330px;"></div>
 <script>
 	
+	document.getElementById('embed17').addEventListener('click', function(){
+		startClock();
+		//appendScriptUrl('/html5.kaltura/mwEmbed/mwEmbedLoader.php', function(){
+		appendScriptUrl('http://html5video.org/kgit/pulls/64/mwEmbedLoader.php', function(){
+			mw.setConfig( 'forceMobileHTML5', true);
+			appendToScore( "Load kWidget library");
+			doKWidgetEmbed();
+		});
+		return false;
+	});
+	
 	document.getElementById('embed16').addEventListener('click', function(){
 		startClock();
 		appendScriptUrl('http://html5video.org/kgit/tags/v1.6.12.10/mwEmbedLoader.php', function(){
@@ -69,7 +80,7 @@
 				'autoPlay' : true
 			},
 			'readyCallback': function( playerId ){
-				appendToScore( "readyCallback ( ready for bind )" );
+				appendToScore( "library and player loaded " );
 				var kdp = document.getElementById( playerId );
 				kdp.addJsListener("doPlay", 'kWidgetStartPlaybackTime' )
 			}
