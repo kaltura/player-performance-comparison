@@ -7,16 +7,17 @@
 <h2>Run Time Tests:  </h2>
 <br />
 <div id="testLinks">
-	<a href="#embed16">Embed HTML5 1.6x </a><br>
-	<a href="#embed17">Embed HTML5 1.7</a> <br>
+	<a href="#embed16">kWidget HTML5 1.6x </a><br>
+	<a href="#embed17">kWidget HTML5 1.7</a> <br>
 	<a href="#embedKdpFlash">KDP Flash Embed</a><br>
+	<a href="#onPage17">OnPage Kaltura HTML5 1.7</a><br>
 	<a href="#embedMediaElmement">MediaElement.js Embed</a><br>
 	<a href="#rawVideoTag">Raw video tag ( just cdn source loading )</a>
 </div>
 <br><br>
 <div id="runTimes" style="width:800px;background:#EEE;"> </div>
 <br>
-<div id="myVideoTarget" style="width:400px;height:330px;"></div>
+<div id="myVideoTarget" style="width:400px;height:330px;position:relative;"></div>
 <script>
 	var startTime = null,
 	firstTime = null,
@@ -34,17 +35,77 @@
 		window[ hash.substr( 1 ) + '_test' ]();
 	}
 	
+	function onPage17_test(){
+		startClock();
+		document.write( '<script type="text/javascript" src="http://cdnakmi.kaltura.org/apis/html5versions/1.7alpha/mwEmbedStartup.php"></scr' + 'ipt>');
+		getVideoTagFromKSources( function(){
+			$('video').embedPlayer( function(){
+				appendToScore( "Library Loaded, Player ready");
+				
+				$( '#myVid' ).bind('playing', function(){
+					$( '#myVid' ).unbind('playing' );
+					appendToScore( "Video started playback");
+				})[0].play();
+			})
+		});
+	}
+	
 	function rawVideoTag_test(){
 		startClock();
 		// stand alone minimal kaltura library for grabbing video sources: 
+		getVideoTagFromKSources(function(){
+			var myVid = document.getElementById( 'myVid' );
+			myVid.addEventListener('playing', function(){
+				appendToScore( "Video started playback");
+			});	
+			myVid.play();	
+		})
+	}
+	
+	function embedMediaElmement_test(){
+		startClock();
+		// to simulate a real page, blocking document write all assets:
+		document.write( '<script src="mediaelement/build/jquery.js"></scr' + 'ipt>' );
+		document.write( '<link rel="stylesheet" href="mediaelement/build/mediaelementplayer.min.css" />' );
+		document.write( '<script src="mediaelement/build/mediaelement-and-player.min.js"></scr' + 'ipt>' );
+		// stand alone minimal kaltura library for grabbing video sources: 
+		document.write( '<script src="http://html5video.org/kgit/branches/develop/modules/KalturaSupport/' + 
+				'standAloneTests/kWidget.getSources.js"></scr' + 'ipt>' );
+		// output blocking continue script test:
+		document.write( '<script type="text/javascript">continueMediaElementTest()</scr' + 'ipt>');
+	}
+	function continueMediaElementTest(){
+		appendToScore( "Loaded mediaElement library" );
+		// now load sources from kaltura
+		kWidget.getSources({
+			'partnerId': '243342',
+			'entryId': testEntryId,
+			'callback': function( sourceSet ){
+				getVideoTagFromKSources(function(){
+					// embed mediaplayer:
+					$('video').mediaelementplayer({
+						success: function(player, node) {
+							appendToScore( "MediaElement js executed: type:" + player.pluginType );
+							player.play();
+						}
+					}).bind('playing', function(){
+						$(this).unbind( 'playing' );
+						appendToScore( "MediaElement started playback");
+					});
+				})
+			}
+		});
+	}
+	function getVideoTagFromKSources( callback){
 		appendScriptUrl( 'http://html5video.org/kgit/branches/develop/modules/KalturaSupport/' + 
 				'standAloneTests/kWidget.getSources.js', function(){
 			kWidget.getSources({
 				'partnerId': '243342',
 				'entryId': testEntryId,
 				'callback': function( sourceSet ){
-					appendToScore( "Raw video, done loading sources" );
+					appendToScore( "Got sources" );
 					var vidHTML = '<video id="myVid" width="400" height="330" ' +
+					'data-durationhint=60 ' +
 					'controls="true" ' +
 					'poster="' + getKalturaThumbUrl({
 						'entry_id': testEntryId,
@@ -57,6 +118,8 @@
 							case 'ogg':
 							case 'iPhone':
 							case 'iPad':
+							case 'iPhoneNew':
+							case 'iPadNew':
 								vidHTML+='<source type="' + source['type'] + '" '+
 									'src="' + source['src'] +'" ' +
 								'>';
@@ -67,78 +130,9 @@
 					// add the video tag
 					var targetElm = document.getElementById( 'myVideoTarget' );
 					targetElm.innerHTML =vidHTML;
-					var myVid = document.getElementById( 'myVid' );
-					myVid.addEventListener('playing', function(){
-						appendToScore( "Raw Video started playback");
-					});	
-					myVid.play();
+					callback();
 				}
 			})
-		});
-	}
-	
-	function embedMediaElmement_test(){
-		startClock();
-		// to simulate a real page, blocking document write all assets:
-		document.write( '<script src="mediaelement/build/jquery.js"></scr' + 'ipt>' );
-		document.write( '<link rel="stylesheet" href="mediaelement/build/mediaelementplayer.min.css" />' );
-		document.write( '<script src="mediaelement/build/mediaelement-and-player.min.js"></scr' + 'ipt>' );
-		// stand alone minimal kaltura library for grabbing video sources: 
-		document.write( '<script src="http://html5video.org/kgit/branches/develop/modules/KalturaSupport/' + 
-				'standAloneTests/kWidget.getSources.js"></scr' + 'ipt>' );
-		// otuput blocking continue script test:
-		document.write( '<script type="text/javascript">continueMediaElementTest()</scr' + 'ipt>');
-	}
-	function continueMediaElementTest(){
-		appendToScore( "Loaded mediaElement library" );
-		// now load sources from kaltura
-		kWidget.getSources({
-			'partnerId': '243342',
-			'entryId': testEntryId,
-			'callback': function( sourceSet ){
-				// we can use jQUery now since mediaelement dep
-				
-				var $vid = $("<video />").attr({
-					'controls' : "controls",
-					'poster': getKalturaThumbUrl({
-						'entry_id': testEntryId,
-						'partner_id' : testPartnerId
-					}),
-					'width' : '400',
-					'height' : '320'
-				})
-				// copy css text from target element:
-				.css('cssText', $('#myVideoTarget').css('cssText') );
-				
-				for( var i in sourceSet ){
-					var source = sourceSet[i];
-					switch( source['data-flavorid'] ){
-					case 'webm':
-					case 'ogg':
-					case 'iPhone':
-					case 'iPad':
-						$vid.append(
-							$('<source />').attr({
-								'type' : source['type'],
-								'src': source['src']
-							})
-						)
-						break;
-					}
-				}
-				// replace the target with the video element.
-				$('#myVideoTarget').replaceWith( $vid );
-				// embed mediaplayer:
-				$('video').mediaelementplayer({
-					success: function(player, node) {
-						appendToScore( "MediaElement js executed: type:" + player.pluginType );
-						player.play();
-					}
-				}).bind('playing', function(){
-					$(this).unbind( 'playing' );
-					appendToScore( "MediaElement started playback");
-				});
-			}
 		});
 	}
 	
