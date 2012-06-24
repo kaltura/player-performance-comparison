@@ -51,20 +51,6 @@
 		});
 	}
 	
-	function onPage17js_test(){
-		startClock();
-		document.write( '<script type="text/javascript" src="http://cdnakmi.kaltura.org/apis/html5versions/1.7jsEntryLoad/mwEmbedStartup.php"></scr' + 'ipt>');
-		getVideoTagFromKSources( function(){
-			$('video').embedPlayer( function(){
-				appendToScore( "Library Loaded, Player ready");
-				
-				$( '#myVid' ).bind('playing', function(){
-					$( '#myVid' ).unbind('playing' );
-					appendToScore( "Video started playback");
-				})[0].play();
-			})
-		});
-	}
 	
 	function rawVideoTag_test(){
 		startClock();
@@ -160,6 +146,16 @@
 			doKWidgetEmbed();
 		});
 	}
+	function embed17js_test(){
+		startClock();
+		//appendScriptUrl('/html5.kaltura/mwEmbed/mwEmbedLoader.php', function(){
+		appendScriptUrl('http://cdnakmi.kaltura.org/apis/html5versions/1.7jsEntryLoad/mwEmbedLoader.php',function(){
+			mw.setConfig( 'forceMobileHTML5', true);
+			appendToScore( "Load kWidget library");
+			doKWidgetEmbed();
+		});
+	}	
+
 	function embed16_test(){
 		startClock();
 		appendScriptUrl('http://cdnakmi.kaltura.org/apis/html5versions/1.6.12.12/mwEmbedLoader.php', function(){
