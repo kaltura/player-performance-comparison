@@ -11,6 +11,7 @@
 	<a href="#embedKdpFlash">KDP Flash Embed</a><br>
 	<a href="#embedMediaElmement">MediaElement.js Embed</a><br>
 	<a href="#embed17">kWidget HTML5 1.7</a> <br>
+	<a href="#embed17js">kWidget HTML5 1.7</a> ( js entry load ) <br>
 	<!-- <a href="#onPage17">OnPage Kaltura HTML5 1.7</a><br> -->
 	<a href="#rawVideoTag">Raw video tag ( just cdn source loading )</a>
 </div>
@@ -38,6 +39,21 @@
 	function onPage17_test(){
 		startClock();
 		document.write( '<script type="text/javascript" src="http://cdnakmi.kaltura.org/apis/html5versions/1.7alpha/mwEmbedStartup.php"></scr' + 'ipt>');
+		getVideoTagFromKSources( function(){
+			$('video').embedPlayer( function(){
+				appendToScore( "Library Loaded, Player ready");
+				
+				$( '#myVid' ).bind('playing', function(){
+					$( '#myVid' ).unbind('playing' );
+					appendToScore( "Video started playback");
+				})[0].play();
+			})
+		});
+	}
+	
+	function onPage17js_test(){
+		startClock();
+		document.write( '<script type="text/javascript" src="http://cdnakmi.kaltura.org/apis/html5versions/1.7jsEntryLoad/mwEmbedStartup.php"></scr' + 'ipt>');
 		getVideoTagFromKSources( function(){
 			$('video').embedPlayer( function(){
 				appendToScore( "Library Loaded, Player ready");
